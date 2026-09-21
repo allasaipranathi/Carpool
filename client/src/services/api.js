@@ -10,7 +10,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000,
+  timeout: 60000,
 });
 
 // Request interceptor to attach JWT token
@@ -25,7 +25,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor to handle auth expiration
+// Response interceptor to handle auth expiration & network error formatting
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -35,6 +35,9 @@ api.interceptors.response.use(
         localStorage.removeItem('carpool_token');
         localStorage.removeItem('carpool_user');
       }
+    }
+    if (!error.response && (error.code === 'ECONNABORTED' || error.message === 'Network Error')) {
+      error.message = 'Unable to connect to the backend server. If the server was sleeping (Render free tier), please wait a few moments and try again.';
     }
     return Promise.reject(error);
   }

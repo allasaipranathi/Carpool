@@ -28,14 +28,32 @@ const allowedOrigins = [
   process.env.CLIENT_URL,
 ].filter(Boolean);
 
+const isOriginAllowed = (origin) => {
+  if (!origin) return true;
+  const clean = origin.replace(/\/+$/, '').toLowerCase();
+  if (allowedOrigins.some((o) => o.replace(/\/+$/, '').toLowerCase() === clean)) {
+    return true;
+  }
+  // Allow all Vercel deployment preview / production subdomains
+  if (/^https:\/\/[a-z0-9-_.]+\.vercel\.app$/i.test(clean)) {
+    return true;
+  }
+  // Allow any local host port for development
+  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(clean)) {
+    return true;
+  }
+  if (process.env.NODE_ENV !== 'production') {
+    return true;
+  }
+  return false;
+};
+
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (e.g. mobile apps, curl, Postman)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+    if (isOriginAllowed(origin)) {
       return callback(null, true);
     }
-    return callback(new Error(`CORS blocked for origin: ${origin}`));
+    return callback(null, false);
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
@@ -44,6 +62,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
