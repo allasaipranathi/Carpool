@@ -1,0 +1,23 @@
+{
+  "name": "carpool-app",
+  "version": "1.0.0",
+  "description": "CarPool Connect Application",
+  "scripts": {
+    "build": "npm install --prefix server",
+    "start": "node server/server.js",
+    "dev": "node server/server.js",
+    "install:server": "npm install --prefix server",
+    "install:client": "npm install --prefix client",
+    "build:client": "npm run build --prefix client",
+    "server": "npm run dev --prefix server",
+    "client": "npm run dev --prefix client"
+  },
+  "keywords": [
+    "carpool",
+    "express",
+    "react",
+    "mongodb"
+  ],
+  "author": "",
+  "license": "ISC"
+}
