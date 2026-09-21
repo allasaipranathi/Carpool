@@ -1,7 +1,19 @@
 import axios from 'axios';
 
-// Resolve API base URL with fallback to local development backend on port 5000
-const rawBase = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+// Resolve API base URL dynamically:
+// 1. Explicit env variables (VITE_API_URL / VITE_API_BASE_URL)
+// 2. Production host fallback (e.g. Vercel deployments -> Render backend)
+// 3. Localhost fallback (http://localhost:5000)
+const resolveBaseUrl = () => {
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  if (import.meta.env.VITE_API_BASE_URL) return import.meta.env.VITE_API_BASE_URL;
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return 'https://carpool-kamc.onrender.com';
+  }
+  return 'http://localhost:5000';
+};
+
+const rawBase = resolveBaseUrl();
 const cleanBase = rawBase.replace(/\/+$/, '');
 const API_BASE_URL = cleanBase.endsWith('/api') ? cleanBase : `${cleanBase}/api`;
 
